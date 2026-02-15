@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BACKEND_URL = "https://make-my-tour-is2w.onrender.com";
+const BACKEND_URL = "https://make-my-tour-2.onrender.com";
 
 export const login = async (email, password) => {
   try {
