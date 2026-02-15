@@ -27,6 +27,12 @@ const index = () => {
     router.push("/");
   };
   const [isEditing, setIsEditing] = useState(false);
+  //1st
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  
+
   const [userData, setUserData] = useState({
     firstName: user?.firstName ? user?.firstName : "",
     lastName: user?.lastName ? user?.lastName : "",
@@ -91,7 +97,28 @@ const index = () => {
         [field]: value, // Update the specific field dynamically
       }));
   };
+  //1st
+  const handleCancelBooking = () => {
+  if (!selectedBooking) return;
+
+  const bookingDate = new Date(selectedBooking.date);
+  const now = new Date();
+  const hoursDiff =
+    (bookingDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+  const refundAmount =
+    hoursDiff < 24 ? selectedBooking.totalPrice * 0.5 : selectedBooking.totalPrice;
+
+  alert(
+    `Booking ${selectedBooking.bookingId} cancelled.\nRefund: ₹${refundAmount}`
+  );
+
+  setShowCancelModal(false);
+  setCancelReason("");
+};
+
   return (
+    <>
     <div className="min-h-screen bg-gray-50 pt-8 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -258,6 +285,16 @@ const index = () => {
                         <span>Paid</span>
                       </div>
                     </div>
+                    {/* //1st  STEP 3 — ADD THIS BUTTON BELOW */}
+                      <button
+                        onClick={() => {
+                          setSelectedBooking(booking);
+                          setShowCancelModal(true);
+                        }}
+                        className="mt-4 text-sm text-red-600 hover:underline"
+                      >
+                        Cancel Booking
+                      </button>
                   </div>
                 ))}
               </div>
@@ -266,7 +303,46 @@ const index = () => {
         </div>
       </div>
     </div>
+    {/* STEP 4 – CANCELLATION MODAL START  */}
+    {showCancelModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg w-full max-w-md">
+          <h3 className="text-lg font-semibold mb-4">
+            Cancel Booking {selectedBooking?.bookingId}
+          </h3>
+
+          <label className="block text-sm font-medium mb-2">
+            Reason for cancellation
+          </label>
+          <select
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 mb-4"
+          >
+            <option value="">Select reason</option>
+            <option value="change_of_plan">Change of plans</option>
+            <option value="found_better_deal">Found better deal</option>
+            <option value="emergency">Emergency</option>
+          </select>
+
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setShowCancelModal(false)}
+              className="px-4 py-2 bg-gray-100 rounded-lg"
+            >
+              Close
+            </button>
+            <button
+              onClick={handleCancelBooking}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg"
+            >
+              Confirm Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
-
 export default index;

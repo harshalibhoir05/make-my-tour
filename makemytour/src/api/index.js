@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BACKEND_URL = "your backend url";
+const BACKEND_URL = "http://localhost:8080";
 
 export const login = async (email, password) => {
   try {
@@ -204,3 +204,13 @@ export const handlehotelbooking = async (userId, hotelId, rooms, price) => {
     console.log(error);
   }
 };
+//3
+export const getFlightStatus = async (flightId) => {
+  try {
+    const res = await axios.get(`${BACKEND_URL}/flight-status/${flightId}`);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+

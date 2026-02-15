@@ -8,6 +8,8 @@ import com.makemytrip.makemytrip.repositories.FlightRepository;
 import com.makemytrip.makemytrip.repositories.HotelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+//5
+import java.time.Month;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -73,5 +75,28 @@ public class BookingService {
         }
         throw new RuntimeException("User or flight not found");
     }
+    //5
+    public Double applyDynamicPricing(Flight flight) {
+
+    Double basePrice = flight.getPrice();
+    LocalDate today = LocalDate.now();
+
+    // Holiday logic (Example: December month)
+    if (today.getMonth() == Month.DECEMBER) {
+        basePrice = basePrice * 1.20; // +20%
+    }
+
+    // High demand logic (less seats)
+    if (flight.getAvailableSeats() < 10) {
+        basePrice = basePrice * 1.15; // +15%
+    }
+
+    // Save history
+    flight.getPriceHistory().add(basePrice);
+
+    return basePrice;
+}
+
+
 
 }

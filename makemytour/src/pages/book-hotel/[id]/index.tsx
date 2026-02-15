@@ -40,6 +40,11 @@ import Loader from "@/components/Loader";
 import { setUser } from "@/store";
 const BookHotelPage = () => {
   const [quantity, setQuantity] = useState(1);
+  //2
+  //  STEP 1: Review & Rating state
+const [rating, setRating] = useState(0); // 1–5 stars
+const [reviewText, setReviewText] = useState("");
+
   const router = useRouter();
   const { id } = router.query; // Access the hotel ID from the URL
   const [hotels, sethotels] = useState<Hotel[]>([]);
@@ -47,6 +52,18 @@ const BookHotelPage = () => {
   const user = useSelector((state: any) => state.user.user);
   const [open, setopem] = useState(false);
   const dispatch = useDispatch();
+  //2nd
+  // ⭐ NEW FEATURE: Reply to Reviews (STATE)
+const [replyText, setReplyText] = useState("");
+const [activeReplyIndex, setActiveReplyIndex] = useState<number | null>(null);
+
+  // ⭐ STEP 1: Review & Rating State
+const [userRating, setUserRating] = useState(0);
+
+const [reviewImages, setReviewImages] = useState<File[]>([]);
+const [reviews, setReviews] = useState<any[]>([]);
+const [sortBy, setSortBy] = useState("recent");
+
   useEffect(() => {
     const fetchhotels = async () => {
       try {
@@ -110,6 +127,12 @@ const BookHotelPage = () => {
       isNaN(value) ? 1 : Math.max(1, Math.min(value, hotel.availableRooms))
     );
   };
+  //2
+  // ⭐ STEP 1: Handle star click
+const handleStarClick = (value: number) => {
+  setRating(value);
+};
+
 
   const totalPrice = hotel?.pricePerNight * quantity;
   const totalTaxes = hotelData?.room.taxes * quantity;
@@ -430,27 +453,145 @@ const BookHotelPage = () => {
               </button>
             </div>
 
-            {/* Rating Card */}
-            <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-blue-500 text-white text-2xl font-bold w-16 h-16 rounded-lg flex items-center justify-center">
-                    {hotelData.reviews.rating}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-lg">
-                      {hotelData.reviews.text}
-                    </div>
-                    <div className="text-gray-500">
-                      ({hotelData.reviews.count} ratings)
-                    </div>
-                  </div>
-                </div>
-                <a href="#" className="text-blue-500">
-                  All Reviews
-                </a>
-              </div>
-            </div>
+              {/* Rating Card */}
+              
+            {/* removed the step one code because it was repeated */}
+  {/* ⭐ STEP 2: Reviews List */}
+<div className="bg-white rounded-xl shadow-lg p-6 mt-6">
+  <div className="flex justify-between items-center mb-4">
+    <h3 className="text-lg font-semibold">Guest Reviews</h3>
+    <select
+      className="border rounded px-2 py-1 text-sm"
+      value={sortBy}
+      onChange={(e) => setSortBy(e.target.value)}
+    >
+      <option value="recent">Most Recent</option>
+      <option value="helpful">Most Helpful</option>
+    </select>
+  </div>
+
+  {reviews.length === 0 && (
+    <p className="text-gray-500 text-sm">No reviews yet</p>
+  )}
+
+  {reviews.map((review, index) => (
+    <div key={index} className="border-t pt-4 mt-4">
+      <div className="flex items-center gap-1 mb-1">
+        {[...Array(review.rating)].map((_, i) => (
+          <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+        ))}
+      </div>
+      {/* 2nd */}
+      <p className="text-gray-700 text-sm">{review.text}</p>
+      {/* ⭐ NEW FEATURE: Reply Button */}
+<button
+  className="text-xs text-blue-500 mt-2"
+  onClick={() =>
+    setActiveReplyIndex(activeReplyIndex === index ? null : index)
+  }
+>
+  Reply
+</button>
+
+{/* ⭐ Reply Input */}
+{activeReplyIndex === index && (
+  <div className="mt-2">
+    <textarea
+      className="w-full border rounded p-2 text-sm"
+      placeholder="Write a reply..."
+      value={replyText}
+      onChange={(e) => setReplyText(e.target.value)}
+    />
+    <button
+      className="mt-1 bg-blue-500 text-white px-3 py-1 rounded text-xs"
+      onClick={() => {
+        const updatedReviews = [...reviews];
+        updatedReviews[index].replies.push(replyText);
+        setReviews(updatedReviews);
+        setReplyText("");
+        setActiveReplyIndex(null);
+      }}
+    >
+      Submit Reply
+    </button>
+  </div>
+)}
+
+{/* ⭐ Display Replies */}
+{review.replies?.map((reply: string, i: number) => (
+  <p key={i} className="ml-4 mt-1 text-xs text-gray-600">
+    ↳ {reply}
+  </p>
+))}
+
+<button
+  className="text-xs text-red-500 mt-1"
+  onClick={() => alert("Review reported for moderation")}
+>
+  Flag as inappropriate
+</button>
+
+    </div>
+  ))}
+</div>
+ {/* ⭐ STEP 3: Add Review */}
+<div className="bg-white rounded-xl shadow-lg p-6 mt-6">
+  <h3 className="text-lg font-semibold mb-4">Write a Review</h3>
+
+  {/* Rating */}
+  <div className="flex gap-1 mb-3">
+    {[1,2,3,4,5].map((star) => (
+      <Star
+        key={star}
+        onClick={() => setUserRating(star)}
+        className={`w-6 h-6 cursor-pointer ${
+          star <= userRating ? "text-yellow-400 fill-current" : "text-gray-300"
+        }`}
+      />
+    ))}
+  </div>
+
+  {/* Review Text */}
+  <textarea
+    value={reviewText}
+    onChange={(e) => setReviewText(e.target.value)}
+    placeholder="Write your experience..."
+    className="w-full border rounded-lg p-2 text-sm mb-3"
+  />
+
+  {/* Upload Photos */}
+  <input
+    type="file"
+    multiple
+    onChange={(e) =>
+      setReviewImages(e.target.files ? Array.from(e.target.files) : [])
+    }
+    className="text-sm mb-3"
+  />
+
+  <button
+    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+    onClick={() => {
+      if (!userRating || !reviewText) return alert("Fill all fields");
+      setReviews([
+        {
+          rating: userRating,
+          text: reviewText,
+          helpful: 0,
+          replies: [],
+        },
+        ...reviews,
+      ]);
+      setUserRating(0);
+      setReviewText("");
+      setReviewImages([]);
+    }}
+  >
+    Submit Review
+  </button>
+</div>
+
+
 
             {/* Location Card */}
             <div className="bg-white rounded-xl shadow-lg p-6 mt-6">

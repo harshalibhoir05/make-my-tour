@@ -1,4 +1,32 @@
+//5
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement);
+
 import { useRouter } from "next/router";
+//3
+import { getFlightStatus } from "@/api/flightStatus";
+
 
 import {
   Plane,
@@ -42,10 +70,15 @@ import SignupDialog from "@/components/SignupDialog";
 import Loader from "@/components/Loader";
 import { setUser } from "@/store";
 const BookFlightPage = () => {
+  //5
+  const [priceHistory, setPriceHistory] = useState<number[]>([]);
+
   const router = useRouter();
   const { id } = router.query;
   const [flights, setFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState(true);
+  //3
+  const [status, setStatus] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [open, setopem] = useState(false);
   const user = useSelector((state: any) => state.user.user);
@@ -64,7 +97,54 @@ const BookFlightPage = () => {
       }
     };
     fetchFlights();
-  }, [id, user]);
+  }, [id]);
+  //5
+  // ✅ Fetch Price History
+useEffect(() => {
+  if (!id) return;
+
+  const fetchPriceHistory = async () => {
+    try {
+      const res = await fetch(`http://localhost:8080/price-history/${id}`);
+      const data = await res.json();
+      console.log("Price history received:", data);
+
+      /* setPriceHistory(data); */
+      if (Array.isArray(data)) {
+  setPriceHistory(data);
+} else if (Array.isArray(data.priceHistory)) {
+  setPriceHistory(data.priceHistory);
+} else {
+  setPriceHistory([]);
+}
+
+    } catch (error) {
+      console.error("Error fetching price history:", error);
+    }
+  };
+
+  fetchPriceHistory();
+}, [id]);
+
+  //3
+  useEffect(() => {
+  if (!id) return;
+
+  const fetchStatus = async () => {
+    const data: any = await getFlightStatus(id as string);
+    setStatus(data);
+
+    if (data?.status?.includes("Delayed")) {
+      alert(`Flight delayed: ${data.delayReason}`);
+    }
+  };
+
+  fetchStatus();
+  const interval = setInterval(fetchStatus, 5000);
+
+  return () => clearInterval(interval);
+}, [id]);
+
 
   if (loading) {
     return <Loader />;
@@ -351,6 +431,25 @@ const BookFlightPage = () => {
                   <span className="ml-2 text-gray-600">MMTSPECIAL</span>
                 </div>
               </div>
+            {/* ✅ Freeze Price Button */}
+<div className="mt-4">
+  <Button
+    className="bg-yellow-500 text-white"
+    onClick={async () => {
+      try {
+        await fetch(`http://localhost:8080/freeze/${id}`, {
+          method: "POST",
+        });
+        alert("Price Frozen for 10 minutes!");
+      } catch (error) {
+        console.error("Freeze failed:", error);
+      }
+    }}
+  >
+    Freeze Price for 10 Minutes
+  </Button>
+</div>
+
 
               <div className="flex flex-wrap md:flex-nowrap justify-between items-start gap-6 border-t pt-6">
                 <div>
@@ -394,6 +493,43 @@ const BookFlightPage = () => {
                   <span>Check-in Baggage: {flightDetails.checkInBaggage}</span>
                 </div>
               </div>
+              {/*  again the same ui */ }
+              {/* Live Flight Status */}
+<div className="mt-4 p-4 bg-blue-50 rounded-lg">
+  <h3 className="font-semibold text-blue-700">Live Flight Status</h3>
+
+  <p>Status: {status?.status || "Loading..."}</p>
+
+  {status?.delayReason && (
+    <p className="text-red-500">Reason: {status.delayReason}</p>
+  )}
+
+  <p>ETA: {status?.eta || "-"}</p>
+</div>
+{/* ✅ Price Trend Graph */}
+{priceHistory.length > 0 && (
+  <div className="mt-6 bg-white p-4 rounded-lg shadow-sm">
+    <h3 className="font-semibold mb-4">Price Trend</h3>
+    <Line
+      data={{
+        labels: Array.isArray(priceHistory)
+  ? priceHistory.map((_, i) => `Update ${i + 1}`)
+  : [],
+
+        datasets: [
+          {
+            label: "Flight Price",
+            data: Array.isArray(priceHistory) ? priceHistory : [],
+
+            borderColor: "rgb(59,130,246)",
+            tension: 0.3,
+          },
+        ],
+      }}
+    />
+  </div>
+)}
+
             </div>
 
             {/* Cancellation Policy */}

@@ -3,6 +3,8 @@ import Loader from "@/components/Loader";
 import { SearchSelect } from "@/components/SearchSelect";
 import SignupDialog from "@/components/SignupDialog";
 import { Button } from "@/components/ui/button";
+//6
+import Recommendations from "@/components/Recommendations/Recommendations";
 import {
   Bus,
   Calendar,
@@ -32,6 +34,8 @@ export default function Home() {
   const [hotel, sethotel] = useState<any[]>([]);
   const [loading, setloading] = useState(true);
   const [flight, setflight] = useState<any[]>([]);
+  
+
   const user = useSelector((state: any) => state.user.user);
   const router = useRouter();
   const flightD = [
@@ -134,7 +138,7 @@ export default function Home() {
 
     fetchdata();
   }, [user]);
-
+ 
   const cityOptions = useMemo(() => {
     const cities = new Set<string>();
     flight.forEach((flight) => {
@@ -183,6 +187,8 @@ export default function Home() {
       router.push(`/book-hotel/${id}`);
     }
   };
+  
+
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-no-repeat"
@@ -339,6 +345,13 @@ export default function Home() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4">
+          {/* AI Recommendations Section */}
+  <section className="my-16">
+    <Recommendations />
+  </section>
+  
+      
+
           {/* Offers Section */}
           <section className="my-16">
             <h2 className="text-2xl font-bold mb-8 text-white">Best Offers</h2>
@@ -509,4 +522,6 @@ function SearchInput({
       </div>
     </div>
   );
+  
+
 }

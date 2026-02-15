@@ -1,11 +1,17 @@
 package com.makemytrip.makemytrip.models;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Document(collection = "flight")
 public class Flight {
+
     @Id
     private String _id;
+
     private String flightName;
     private String from;
     private String to;
@@ -13,6 +19,11 @@ public class Flight {
     private String arrivalTime;
     private double price;
     private int availableSeats;
+
+    // ✅ Dynamic Pricing Fields (INSIDE CLASS)
+    private List<Double> priceHistory = new ArrayList<>();
+    private Double frozenPrice;
+    private LocalDateTime freezeExpiry;
 
     // Getters and Setters
 
@@ -78,5 +89,31 @@ public class Flight {
 
     public void setAvailableSeats(int availableSeats) {
         this.availableSeats = availableSeats;
+    }
+
+    // ✅ Price History
+    public List<Double> getPriceHistory() {
+        return priceHistory;
+    }
+
+    public void setPriceHistory(List<Double> priceHistory) {
+        this.priceHistory = priceHistory;
+    }
+
+    // ✅ Freeze Price
+    public Double getFrozenPrice() {
+        return frozenPrice;
+    }
+
+    public void setFrozenPrice(Double frozenPrice) {
+        this.frozenPrice = frozenPrice;
+    }
+
+    public LocalDateTime getFreezeExpiry() {
+        return freezeExpiry;
+    }
+
+    public void setFreezeExpiry(LocalDateTime freezeExpiry) {
+        this.freezeExpiry = freezeExpiry;
     }
 }
