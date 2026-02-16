@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BACKEND_URL = "https://make-my-tour-2.onrender.com";
+const BACKEND_URL = "http://localhost:8080";
 
 export const login = async (email, password) => {
   try {
@@ -196,7 +196,7 @@ export const handleflightbooking = async (userId, flightId, seats, price) => {
 
 export const handlehotelbooking = async (userId, hotelId, rooms, price) => {
   try {
-    const url = `${BACKEND_URL}/booking/flight?userId=${userId}&hotelId=${hotelId}&rooms=${rooms}&price=${price}`;
+    const url = `${BACKEND_URL}/booking/hotel?userId=${userId}&hotelId=${hotelId}&rooms=${rooms}&price=${price}`;
     const res = await axios.post(url);
     const data = res.data;
     return data;
